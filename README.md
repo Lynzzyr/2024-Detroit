@@ -1,6 +1,6 @@
-# 2024-WAIO
+# 2024-Detroit
 
-### WAIO (WPILib All In One)
+### Detroit is the American city that encompasses Windsor.
 
 A 2024 FRC robot project for reference purposes
 

@@ -49,7 +49,7 @@ public class SwerveModule extends SubsystemBase {
     private final Location m_location;
     private boolean isStuck = false;
 
-    private SwerveModule(
+    public SwerveModule(
         int motDriveID,
         int motTurnID,
         int CANcoderID,

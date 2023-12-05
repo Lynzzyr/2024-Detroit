@@ -23,22 +23,22 @@ public final class Constants {
 
     public static final class kDrivetrain {
         public static final class kCANID {
-            public static final int kMotDriveFL = 0;
-            public static final int kMotDriveFR = 1;
-            public static final int kMotDriveBL = 2;
-            public static final int kMoDriveBR = 3;
+            public static final int kMotDriveFL = 12;
+            public static final int kMotDriveFR = 9;
+            public static final int kMotDriveBL = 15;
+            public static final int kMotDriveBR = 18;
 
-            public static final int kMotTurnFL = 4;
-            public static final int kMotTurnFR = 5;
-            public static final int kMotTurnBL = 6;
-            public static final int kMotTurnBR = 7;
+            public static final int kMotTurnFL = 11;
+            public static final int kMotTurnFR = 8;
+            public static final int kMotTurnBL = 14;
+            public static final int kMotTurnBR = 17;
 
-            public static final int kCANcoderFL = 8;
-            public static final int kCANcoderFR = 9;
-            public static final int kCANcoderBL = 10;
-            public static final int kCANcoderBR = 11;
+            public static final int kCANcoderFL = 13;
+            public static final int kCANcoderFR = 10;
+            public static final int kCANcoderBL = 16;
+            public static final int kCANcoderBR = 19;
 
-            public static final int kPigeon = 12;
+            public static final int kPigeon = 3;
         }
 
         public static final class kCurrentLimit {
@@ -57,16 +57,32 @@ public final class Constants {
             public static final double kTurnD = 0;
             public static final double kTurnFF = 0;
 
-            public static final double kHeadingP = 3.3;
+            public static final double kHeadingP = 3;
             public static final double kHeadingI = 0;
             public static final double kHeadingD = 0;
+        }
+
+        public static final class kCANcoder {
+            public static final int kCountsPerRev = 4096;
+
+            public static final double kMountPoseYaw = -90; // -Y axis faces forward
+
+            public static final double kAbsOffsetFL = 0.725098;
+            public static final double kAbsOffsetFR = 0.692139;
+            public static final double kAbsOffsetBL = 0.994873;
+            public static final double kAbsOffsetBR = 0.875244;
         }
 
         public static enum Location {
             FRONT_LEFT,
             FRONT_RIGHT,
-            BOTTOM_LEFT,
-            BOTTOM_RIGHT
+            BACK_LEFT,
+            BACK_RIGHT
+        }
+
+        public static final class kRobot {
+            public static final double kLength = 0.64;
+            public static final double kWidth = 0.64;
         }
 
         public static final double kWheelRadius = 0.05; // meters
