@@ -3,6 +3,8 @@ package frc.robot.subsystems;
 import com.ctre.phoenix6.configs.MountPoseConfigs;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
+import com.pathplanner.lib.util.ReplanningConfig;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -13,7 +15,6 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 
 // 5409: The Chargers
 // http://github.com/FRC5409
@@ -21,6 +22,7 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.kDrivetrain;
 import frc.robot.Constants.kDrivetrain.Location;
+import frc.robot.Constants.kDrivetrain.kAutonomous;
 import frc.robot.Constants.kDrivetrain.kCANID;
 import frc.robot.Constants.kDrivetrain.kCANcoder;
 import frc.robot.Constants.kDrivetrain.kPID;
@@ -52,10 +54,6 @@ public class Drivetrain extends SubsystemBase {
     private final PIDController headingPID;
     private double headingPIDSetpoint = -1; // initial of -1 for null setpoint
 
-    // Shuffleboard
-    private boolean debugMode = true; // enables many Shuffleboard elements; turn off to free up CAN bus
-    private ShuffleboardTab sbDrivetrain;
-
     private Drivetrain() {
         // Modules
         modFL = SwerveModule.getInstance(kCANID.kMotDriveFL, kCANID.kMotTurnFL, kCANID.kCANcoderFL, kCANcoder.kAbsOffsetFL, false, true, Location.FRONT_LEFT);
@@ -84,8 +82,15 @@ public class Drivetrain extends SubsystemBase {
         headingPID.setTolerance(Math.toRadians(3));
         headingPID.enableContinuousInput(0, Math.toRadians(360));
 
-        // Build AutoBuilder
-        AutoBuilder.configureHolonomic(null, null, null, null, null, instance);
+        // PathPlanner
+        AutoBuilder.configureHolonomic(
+            this::getPose2d,
+            this::resetOdometry,
+            this::getChassisSpeeds,
+            this::driveFromChassisSpeeds,
+            new HolonomicPathFollowerConfig(kAutonomous.kMaxDriveVelocity, 0.4, new ReplanningConfig()),
+            this
+        );
     }
 
     // Get subsystem
@@ -194,10 +199,45 @@ public class Drivetrain extends SubsystemBase {
         }
     }
 
+    public ChassisSpeeds getChassisSpeeds() {
+        return kinematics.toChassisSpeeds(modFL.getState(), modFR.getState(), modBL.getState(), modBR.getState());
+    }
+
+    public void stopMotors() {
+        modFL.stopMotors();
+        modFR.stopMotors();
+        modBL.stopMotors();
+        modBR.stopMotors();
+    }
+
+    public void setRampRate() {
+        modFL.setRampRate(true);
+        modFR.setRampRate(true);
+        modBL.setRampRate(true);
+        modBR.setRampRate(true);
+    }
+
+    public boolean getRampRate() {
+        return modFL.getBrakeMode()
+            || modFR.getBrakeMode()
+            || modBL.getBrakeMode()
+            || modBR.getBrakeMode();
+    }
+
+    public SwerveModule[] getModules() {
+        SwerveModule[] modules = new SwerveModule[4];
+
+        modules[0] = modFL;
+        modules[1] = modFR;
+        modules[2] = modBL;
+        modules[3] = modBR;
+
+        return modules;
+    }
+
     @Override
     public void periodic() {
-        // This method will be called once per scheduler run
-        
+        updateOdometry();
     }
 
     @Override

@@ -85,6 +85,13 @@ public final class Constants {
             public static final double kWidth = 0.64;
         }
 
+        public static final class kAutonomous {
+            public static final String[] kPaths = {"Path1"}; // all available trajectories from PathPlanner
+    
+            public static final double kMaxDriveVelocity = 1;
+            public static final double kMaxDriveAcceleration = 1;
+        }
+
         public static final double kWheelRadius = 0.05; // meters
         public static final double kWheelDiameter = 2 * kWheelRadius;
         public static final double kWheelCircumference = Math.PI * kWheelDiameter;

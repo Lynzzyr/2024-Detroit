@@ -176,7 +176,7 @@ public class SwerveModule extends SubsystemBase {
         motDrive.setClosedLoopRampRate(enable ? kDrivetrain.kDriveRampRate : 0);
     }
 
-    public boolean isRampRateEnabled() {
+    public boolean getRampRate() {
         return (motDrive.getClosedLoopRampRate() > 0);
     }
 
