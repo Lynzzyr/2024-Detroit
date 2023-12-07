@@ -18,10 +18,10 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 // http://github.com/FRC5409
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants.kDrivetrain;
-import frc.robot.Constants.kDrivetrain.Location;
-import frc.robot.Constants.kDrivetrain.kCurrentLimit;
-import frc.robot.Constants.kDrivetrain.kPID;
+import frc.robot.Constants.kDrive;
+import frc.robot.Constants.kDrive.kLocation;
+import frc.robot.Constants.kDrive.kPID;
+import frc.robot.Constants.kDrive.kRelativeEncoder;
 
 /**
  * SDS MK4i
@@ -46,7 +46,7 @@ public class SwerveModule extends SubsystemBase {
     private final SparkMaxPIDController pidMotTurn;
 
     // Location
-    private final Location m_location;
+    private final kLocation m_location;
     private boolean isStuck = false;
 
     public SwerveModule(
@@ -56,7 +56,7 @@ public class SwerveModule extends SubsystemBase {
         double CANcoderAbsOffset,
         boolean motDriveInverted,
         boolean motTurnInverted,
-        Location location
+        kLocation location
     ) {
         // Motors
         motDrive = new CANSparkMax(motDriveID, MotorType.kBrushless);
@@ -80,7 +80,7 @@ public class SwerveModule extends SubsystemBase {
     }
 
     // Get subsystem
-    public static SwerveModule getInstance(int motDriveID, int motTurnID, int CANcoderID, double CANcoderAbsOffset, boolean motDriveInverted, boolean motTurnInverted, Location location) {
+    public static SwerveModule getInstance(int motDriveID, int motTurnID, int CANcoderID, double CANcoderAbsOffset, boolean motDriveInverted, boolean motTurnInverted, kLocation location) {
         if (instance == null) instance = new SwerveModule(motDriveID, motTurnID, CANcoderID, CANcoderAbsOffset, motDriveInverted, motTurnInverted, location);
         return instance;
     }
@@ -89,7 +89,7 @@ public class SwerveModule extends SubsystemBase {
         // Motors
         motDrive.restoreFactoryDefaults();
         motDrive.setInverted(motDriveInverted);
-        motDrive.setSmartCurrentLimit(kCurrentLimit.kMotDriveCurrentLimit);
+        motDrive.setSmartCurrentLimit(kDrive.kDriveMotorCurrentLimit);
         setRampRate(true);
         pidMotDrive.setP(kPID.kDriveP);
         pidMotDrive.setI(kPID.kDriveI);
@@ -98,12 +98,12 @@ public class SwerveModule extends SubsystemBase {
 
         motTurn.restoreFactoryDefaults();
         motTurn.setInverted(motTurnInverted);
-        motTurn.setSmartCurrentLimit(kCurrentLimit.kMotTurnCurrentLimit);
+        motTurn.setSmartCurrentLimit(kDrive.kTurnMotorCurrentLimit);
         pidMotTurn.setP(kPID.kTurnP);
         pidMotTurn.setI(kPID.kTurnI);
         pidMotTurn.setD(kPID.kTurnD);
         pidMotTurn.setFF(kPID.kTurnFF);
-        pidMotTurn.setSmartMotionMaxAccel(kDrivetrain.kMaxTurnAngularAcceleration, 0);
+        pidMotTurn.setSmartMotionMaxAccel(kDrive.kMaxTurnAngularAcceleration, 0);
         pidMotTurn.setPositionPIDWrappingEnabled(true);
         pidMotTurn.setPositionPIDWrappingMaxInput(2 * Math.PI);
         pidMotTurn.setPositionPIDWrappingMinInput(0);
@@ -111,11 +111,11 @@ public class SwerveModule extends SubsystemBase {
         setBrakeMode(false); // will be set true later
 
         // Encoders
-        encDrive.setVelocityConversionFactor(kDrivetrain.kDriveEncoderCoefficient / 60);
-        encDrive.setPositionConversionFactor(kDrivetrain.kDriveEncoderCoefficient);
+        encDrive.setVelocityConversionFactor(kRelativeEncoder.kDriveSensorCoefficient / 60);
+        encDrive.setPositionConversionFactor(kRelativeEncoder.kTurnSensorCoefficient);
 
-        encTurn.setVelocityConversionFactor(kDrivetrain.kTurnEncoderCoefficient / 60);
-        encTurn.setPositionConversionFactor(kDrivetrain.kTurnEncoderCoefficient);
+        encTurn.setVelocityConversionFactor(kRelativeEncoder.kTurnSensorCoefficient / 60);
+        encTurn.setPositionConversionFactor(kRelativeEncoder.kTurnSensorCoefficient);
 
         m_CANcoderMagnetConfig.MagnetOffset = CANcoderAbsOffset / 360; // CANcoderAbsOffset is degrees and Phoenix v6 now uses rotations not degrees
         m_CANcoderMagnetConfig.AbsoluteSensorRange = AbsoluteSensorRangeValue.Unsigned_0To1;
@@ -173,7 +173,7 @@ public class SwerveModule extends SubsystemBase {
     }
 
     public void setRampRate(boolean enable) {
-        motDrive.setClosedLoopRampRate(enable ? kDrivetrain.kDriveRampRate : 0);
+        motDrive.setClosedLoopRampRate(enable ? kDrive.kDriveRampRate : 0);
     }
 
     public boolean getRampRate() {

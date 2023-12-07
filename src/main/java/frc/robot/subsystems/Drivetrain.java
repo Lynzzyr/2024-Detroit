@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import java.util.function.DoubleSupplier;
+
 import com.ctre.phoenix6.configs.MountPoseConfigs;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -15,18 +17,20 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 
 // 5409: The Chargers
 // http://github.com/FRC5409
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants.kDrivetrain;
-import frc.robot.Constants.kDrivetrain.Location;
-import frc.robot.Constants.kDrivetrain.kAutonomous;
-import frc.robot.Constants.kDrivetrain.kCANID;
-import frc.robot.Constants.kDrivetrain.kCANcoder;
-import frc.robot.Constants.kDrivetrain.kPID;
-import frc.robot.Constants.kDrivetrain.kRobot;
+import frc.robot.Constants.kAutonomous;
+import frc.robot.Constants.kCANID;
+import frc.robot.Constants.kDrive;
+import frc.robot.Constants.kRobot;
+import frc.robot.Constants.kDrive.kCANcoder;
+import frc.robot.Constants.kDrive.kLocation;
+import frc.robot.Constants.kDrive.kPID;
 
 public class Drivetrain extends SubsystemBase {
 
@@ -54,12 +58,17 @@ public class Drivetrain extends SubsystemBase {
     private final PIDController headingPID;
     private double headingPIDSetpoint = -1; // initial of -1 for null setpoint
 
+    // Shuffleboard
+    private boolean debugMode = true; // will show ShuffleboardTab if true
+
+    private final ShuffleboardTab sbDrive;
+
     private Drivetrain() {
         // Modules
-        modFL = SwerveModule.getInstance(kCANID.kMotDriveFL, kCANID.kMotTurnFL, kCANID.kCANcoderFL, kCANcoder.kAbsOffsetFL, false, true, Location.FRONT_LEFT);
-        modFR = SwerveModule.getInstance(kCANID.kMotDriveFR, kCANID.kMotTurnFR, kCANID.kCANcoderFR, kCANcoder.kAbsOffsetFR, true, true, Location.FRONT_RIGHT);
-        modBL = SwerveModule.getInstance(kCANID.kMotDriveBL, kCANID.kMotTurnBL, kCANID.kCANcoderBL, kCANcoder.kAbsOffsetBL, false, true, Location.BACK_LEFT);
-        modBR = SwerveModule.getInstance(kCANID.kMotDriveBR, kCANID.kMotTurnBR, kCANID.kCANcoderBR, kCANcoder.kAbsOffsetBR, true, true, Location.BACK_RIGHT);
+        modFL = SwerveModule.getInstance(kCANID.kMotDriveFL, kCANID.kMotTurnFL, kCANID.kCANcoderFL, kCANcoder.kAbsoluteEncoderOffsetFL, false, true, kLocation.FRONT_LEFT);
+        modFR = SwerveModule.getInstance(kCANID.kMotDriveFR, kCANID.kMotTurnFR, kCANID.kCANcoderFR, kCANcoder.kAbsoluteEncoderOffsetFR, true, true, kLocation.FRONT_RIGHT);
+        modBL = SwerveModule.getInstance(kCANID.kMotDriveBL, kCANID.kMotTurnBL, kCANID.kCANcoderBL, kCANcoder.kAbsoluteEncoderOffsetBL, false, true, kLocation.BACK_LEFT);
+        modBR = SwerveModule.getInstance(kCANID.kMotDriveBR, kCANID.kMotTurnBR, kCANID.kCANcoderBR, kCANcoder.kAbsoluteEncoderOffsetBR, true, true, kLocation.BACK_RIGHT);
 
         // Kinematic points
         modLocFL = new Translation2d(kRobot.kLength / 2, kRobot.kWidth / 2);
@@ -68,7 +77,7 @@ public class Drivetrain extends SubsystemBase {
         modLocBR = new Translation2d(-kRobot.kLength / 2, -kRobot.kWidth / 2);
 
         // Sensors
-        gyro = new Pigeon2(kCANID.kPigeon);
+        gyro = new Pigeon2(kCANID.kGyro);
         gyroMountPosConfig = new MountPoseConfigs();
         gyroMountPosConfig.MountPoseYaw = kCANcoder.kMountPoseYaw;
         gyro.getConfigurator().apply(gyroMountPosConfig);
@@ -81,6 +90,13 @@ public class Drivetrain extends SubsystemBase {
         headingPID = new PIDController(kPID.kHeadingP, kPID.kHeadingI, kPID.kHeadingD);
         headingPID.setTolerance(Math.toRadians(3));
         headingPID.enableContinuousInput(0, Math.toRadians(360));
+
+        // Shuffleboard
+        sbDrive = Shuffleboard.getTab("Drive");
+
+        sbDrive.addDouble("Forward Velocity", () -> getChassisSpeeds().vxMetersPerSecond);
+        sbDrive.addDouble("Sidways Velocity", () -> getChassisSpeeds().vyMetersPerSecond);
+        sbDrive.addDouble("Angular Velocity", () -> getChassisSpeeds().omegaRadiansPerSecond);
 
         // PathPlanner
         AutoBuilder.configureHolonomic(
@@ -164,7 +180,7 @@ public class Drivetrain extends SubsystemBase {
     private void driveFromChassisSpeeds(ChassisSpeeds chassisSpeeds) {
         SwerveModuleState[] swerveModuleStates = kinematics.toSwerveModuleStates(chassisSpeeds);
 
-        SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, kDrivetrain.kMaxDriveVelocity);
+        SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, kDrive.kMaxDriveVelocity);
 
         setModuleStates(swerveModuleStates);
     }

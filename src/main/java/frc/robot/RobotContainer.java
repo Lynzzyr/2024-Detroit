@@ -7,7 +7,9 @@ package frc.robot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Constants.kOperatorConstants;
+import frc.robot.Constants.kControllers;
+import frc.robot.commands.SwerveDrive;
+import frc.robot.subsystems.Drivetrain;
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -19,17 +21,33 @@ import frc.robot.Constants.kOperatorConstants;
  * subsystems, commands, and trigger mappings) should be declared here.
  */
 public class RobotContainer {
-    // The robot's subsystems and commands are defined here...
 
-    // Replace with CommandPS4Controller or CommandJoystick if needed
-    private final CommandXboxController m_driverController = new CommandXboxController(
-            kOperatorConstants.kDriverControllerPort);
+    // Controllers
+    private final CommandXboxController m_primaryController;
+
+    // Subsystems
+    private final Drivetrain sys_drivetrain;
+
+    // Commands
+    private final SwerveDrive cmd_swerveDrive;
 
     /**
      * The container for the robot. Contains subsystems, OI devices, and commands.
      */
     public RobotContainer() {
-        // Configure the trigger bindings
+
+        // Controllers
+        m_primaryController = new CommandXboxController(kControllers.kPrimaryController);
+
+        // Subsystems
+        sys_drivetrain = Drivetrain.getInstance();
+
+        // Commands
+        cmd_swerveDrive = new SwerveDrive(m_primaryController);
+
+        // Default commands
+        sys_drivetrain.setDefaultCommand(cmd_swerveDrive);
+
         configureBindings();
     }
 
@@ -61,7 +79,6 @@ public class RobotContainer {
      * @return the command to run in autonomous
      */
     public Command getAutonomousCommand() {
-        // An example command will be run in autonomous
         return null;
     }
 }
