@@ -61,7 +61,7 @@ public class Drivetrain extends SubsystemBase {
     // Shuffleboard
     private boolean debugMode = true; // will show ShuffleboardTab if true
 
-    private final ShuffleboardTab sbDrive;
+    private ShuffleboardTab sbDrive;
 
     private Drivetrain() {
         // Modules
@@ -92,11 +92,13 @@ public class Drivetrain extends SubsystemBase {
         headingPID.enableContinuousInput(0, Math.toRadians(360));
 
         // Shuffleboard
-        sbDrive = Shuffleboard.getTab("Drive");
+        if (debugMode) {
+            sbDrive = Shuffleboard.getTab("Drive");
 
-        sbDrive.addDouble("Forward Velocity", () -> getChassisSpeeds().vxMetersPerSecond);
-        sbDrive.addDouble("Sidways Velocity", () -> getChassisSpeeds().vyMetersPerSecond);
-        sbDrive.addDouble("Angular Velocity", () -> getChassisSpeeds().omegaRadiansPerSecond);
+            sbDrive.addDouble("Forward Velocity", () -> getChassisSpeeds().vxMetersPerSecond);
+            sbDrive.addDouble("Sidways Velocity", () -> getChassisSpeeds().vyMetersPerSecond);
+            sbDrive.addDouble("Angular Velocity", () -> getChassisSpeeds().omegaRadiansPerSecond);
+        }
 
         // PathPlanner
         AutoBuilder.configureHolonomic(
